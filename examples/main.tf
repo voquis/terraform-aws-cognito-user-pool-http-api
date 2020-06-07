@@ -1,6 +1,6 @@
 module "cognito-user-pool-http-api" {
-  source = "voquis/cognito-user-pool-http-api"
-  version = "0.0.2"
+  source = "voquis/cognito-user-pool-http-api/aws"
+  version = "0.0.3"
 
   cognito_user_pool_name = "my-pool"
   cognito_user_pool_client_name = "my-pool-client"
