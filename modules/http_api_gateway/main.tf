@@ -10,6 +10,12 @@ terraform {
 resource "aws_apigatewayv2_api" "this" {
   name          = var.api_gateway_name
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = var.cors_allow_origins
+    allow_methods = var.cors_allow_methods
+    allow_headers = var.cors_allow_headers
+    max_age       = var.cors_max_age
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -30,5 +36,38 @@ resource "aws_apigatewayv2_authorizer" "this" {
     audience = var.jwt_audience
     issuer   = var.jwt_issuer
   }
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Create autodeploy stage
+# Provider Docs: https://www.terraform.io/docs/providers/aws/r/apigatewayv2_stage.html
+# Note that the initial stage will not autodeploy unless integrations are added
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_apigatewayv2_stage" "this" {
+  api_id      = aws_apigatewayv2_api.this.id
+  auto_deploy = var.stage_autodeploy
+  name        = var.stage_name
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Create initial routes
+# Provider Docs: https://www.terraform.io/docs/providers/aws/r/apigatewayv2_route.html
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html#http-api-cors-default-route
+# ---------------------------------------------------------------------------------------------------------------------
+
+# Allow unauthenticated OPTIONS requests, needed for CORS
+resource "aws_apigatewayv2_route" "proxy" {
+  api_id    = aws_apigatewayv2_api.this.id
+  route_key = "OPTIONS /{proxy+}"
+}
+
+# Authenticated all other requests
+resource "aws_apigatewayv2_route" "default" {
+  api_id             = aws_apigatewayv2_api.this.id
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.this.id
+  route_key          = "$default"
 }
 
