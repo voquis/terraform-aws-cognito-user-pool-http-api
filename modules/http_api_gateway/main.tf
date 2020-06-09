@@ -38,7 +38,6 @@ resource "aws_apigatewayv2_authorizer" "this" {
   }
 }
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Create autodeploy stage
 # Provider Docs: https://www.terraform.io/docs/providers/aws/r/apigatewayv2_stage.html
@@ -46,28 +45,22 @@ resource "aws_apigatewayv2_authorizer" "this" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_apigatewayv2_stage" "this" {
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.this.arn
+    format          = var.log_format
+  }
   api_id      = aws_apigatewayv2_api.this.id
   auto_deploy = var.stage_autodeploy
   name        = var.stage_name
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Create initial routes
-# Provider Docs: https://www.terraform.io/docs/providers/aws/r/apigatewayv2_route.html
-# https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html#http-api-cors-default-route
+# Create Cloudwatch log group
+# Provider Docs: https://www.terraform.io/docs/providers/aws/r/cloudwatch_log_group.html
 # ---------------------------------------------------------------------------------------------------------------------
 
-# Allow unauthenticated OPTIONS requests, needed for CORS
-resource "aws_apigatewayv2_route" "proxy" {
-  api_id    = aws_apigatewayv2_api.this.id
-  route_key = "OPTIONS /{proxy+}"
-}
 
-# Authenticated all other requests
-resource "aws_apigatewayv2_route" "default" {
-  api_id             = aws_apigatewayv2_api.this.id
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.this.id
-  route_key          = "$default"
+resource "aws_cloudwatch_log_group" "this" {
+  name              = var.log_group_name
+  retention_in_days = var.log_retention_in_days
 }
-

@@ -35,6 +35,7 @@ variable "stage_name" {
 # OPTIONAL PARAMETERS
 # ---------------------------------------------------------------------------------------------------------------------
 
+# HTTP API gateway parameters
 variable "cors_allow_headers" {
   description = "Set Access-Control-Allow-Headers header, tells pre-flight OPTIONS requests which HTTP headers can be used during the actual request"
   type        = list(string)
@@ -59,11 +60,30 @@ variable "cors_max_age" {
   default     = 0
 }
 
-# HTTP API gateway parameters
+
 variable "identity_sources" {
   description = "Identity sources (location of JWT in request)"
   type        = list(string)
   default     = ["$request.header.Authorization"]
+}
+
+variable "log_group_name" {
+  description = "CloudWatch log group name, random unique name will be given if omitted"
+  type        = string
+  default     = null
+}
+
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging-variables.html
+variable "log_format" {
+  description = "Integration access log format"
+  type        = string
+  default     = "$context.identity.sourceIp,$context.requestTime,$context.httpMethod,$context.routeKey,$context.protocol,$context.status,$context.responseLength,$context.requestId,$context.extendedRequestId,$context.integrationErrorMessage"
+}
+
+variable "log_retention_in_days" {
+  description = "Number of days to keep CloudWatch logs"
+  type        = number
+  default     = 30
 }
 
 variable "stage_autodeploy" {

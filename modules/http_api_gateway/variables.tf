@@ -61,6 +61,25 @@ variable "identity_sources" {
   default     = ["$request.header.Authorization"]
 }
 
+variable "log_group_name" {
+  description = "CloudWatch log group name, random unique name will be given if omitted"
+  type        = string
+  default     = null
+}
+
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging-variables.html
+variable "log_format" {
+  description = "Integration access log format"
+  type        = string
+  default     = "$context.identity.sourceIp,$context.requestTime,$context.httpMethod,$context.routeKey,$context.protocol,$context.status,$context.responseLength,$context.requestId,$context.extendedRequestId,$context.integrationErrorMessage"
+}
+
+variable "log_retention_in_days" {
+  description = "Number of days to keep CloudWatch logs"
+  type        = number
+  default     = 30
+}
+
 variable "stage_autodeploy" {
   description = "Whether the API stage should be automatically redeployed on every eligible change, e.g. updating a route or authorization"
   type        = bool

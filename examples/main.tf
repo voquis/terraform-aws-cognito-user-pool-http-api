@@ -4,7 +4,7 @@ provider "aws" {
 
 module "cognito-user-pool-http-api" {
   source  = "voquis/cognito-user-pool-http-api/aws"
-  version = "0.1.0"
+  version = "0.2.0"
   # Required parameters
   cognito_user_pool_name          = "my-pool"
   cognito_user_pool_client_name   = "my-pool-client"
@@ -17,6 +17,9 @@ module "cognito-user-pool-http-api" {
   cors_allow_methods              = ["GET", "POST", "DELETE", "PUT"]
   cors_allow_origins              = ["https://*"]
   cors_max_age                    = 300
+  log_group_name                  = "my-api-gateway-logs"
+  log_format                      = "$context.identity.sourceIp,$context.requestTime,$context.httpMethod,$context.routeKey,$context.protocol,$context.status,$context.requestId,$context.extendedRequestId,$context.integrationErrorMessage"
+  log_retention_in_days           = 14
   stage_autodeploy                = true
 }
 
